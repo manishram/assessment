@@ -156,7 +156,7 @@ export class ArticleService {
     );
     const article = new Article(user!, dto.title, dto.description, dto.body);
     
-    const tagListArray = dto.tagList.split(",");
+    const tagListArray = dto.tagList.split(",").map((tag) => tag.trim());
 
     article.tagList.push(...tagListArray);
     user?.articles.add(article);
