@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/mysql';
-
 import { User } from '../user/user.entity';
 import { Article } from './article.entity';
 import { IArticleRO, IArticlesRO, ICommentsRO } from './article.interface';
 import { Comment } from './comment.entity';
 import { CreateArticleDto, CreateCommentDto } from './dto';
 import { Console } from 'console';
+import { Tag } from '../tag/tag.entity';
 
 @Injectable()
 export class ArticleService {
@@ -20,6 +20,8 @@ export class ArticleService {
     private readonly commentRepository: EntityRepository<Comment>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: EntityRepository<Tag>,
   ) {}
 
   async findAll(userId: number, query: Record<string, string>): Promise<IArticlesRO> {
@@ -155,15 +157,30 @@ export class ArticleService {
       { populate: ['followers', 'favorites', 'articles'] },
     );
     const article = new Article(user!, dto.title, dto.description, dto.body);
-    
-    const tagListArray = dto.tagList.split(",").map((tag) => tag.trim());
 
+    const createdTags = await Promise.all(
+      dto.tagList.split(",").map(async (tagName) => {
+        const existingTag = await this.tagRepository.findOne({ tag: tagName.trim() });
+    
+        if (existingTag) {
+          return existingTag;
+        }
+    
+        const newTag = new Tag();
+        newTag.tag = tagName.trim();
+        await this.em.persistAndFlush(newTag);
+        return newTag;
+      })
+    );
+    const tagListArray = dto.tagList.split(',').map((tag) => tag.trim());
     article.tagList.push(...tagListArray);
+    
     user?.articles.add(article);
     await this.em.flush();
-
+  
     return { article: article.toJSON(user!) };
   }
+  
 
   async update(userId: number, slug: string, articleData: any): Promise<IArticleRO> {
     const user = await this.userRepository.findOne(
@@ -180,4 +197,7 @@ export class ArticleService {
   async delete(slug: string) {
     return this.articleRepository.nativeDelete({ slug });
   }
+
+  
 }
+
