@@ -8,6 +8,7 @@ import { Article } from './article.entity';
 import { IArticleRO, IArticlesRO, ICommentsRO } from './article.interface';
 import { Comment } from './comment.entity';
 import { CreateArticleDto, CreateCommentDto } from './dto';
+import { Console } from 'console';
 
 @Injectable()
 export class ArticleService {
@@ -154,7 +155,10 @@ export class ArticleService {
       { populate: ['followers', 'favorites', 'articles'] },
     );
     const article = new Article(user!, dto.title, dto.description, dto.body);
-    article.tagList.push(...dto.tagList);
+    
+    const tagListArray = dto.tagList.split(",");
+
+    article.tagList.push(...tagListArray);
     user?.articles.add(article);
     await this.em.flush();
 
