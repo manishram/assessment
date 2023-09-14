@@ -7,7 +7,6 @@ import { Article } from './article.entity';
 import { IArticleRO, IArticlesRO, ICommentsRO } from './article.interface';
 import { Comment } from './comment.entity';
 import { CreateArticleDto, CreateCommentDto } from './dto';
-import { Console } from 'console';
 import { Tag } from '../tag/tag.entity';
 
 @Injectable()
@@ -156,7 +155,7 @@ export class ArticleService {
       { id: userId },
       { populate: ['followers', 'favorites', 'articles'] },
     );
-    const article = new Article(user!, dto.title, dto.description, dto.body);
+    const article = new Article(user!, dto.title, dto.description, dto.body, dto.co_authors);
 
     const createdTags = await Promise.all(
       dto.tagList.split(",").map(async (tagName) => {
@@ -178,6 +177,8 @@ export class ArticleService {
     user?.articles.add(article);
     await this.em.flush();
   
+    // article.co_authors = dto.co_authors;
+
     return { article: article.toJSON(user!) };
   }
   

@@ -49,11 +49,15 @@ export class Article {
   @Property({ type: 'number' })
   favoritesCount = 0;
 
-  constructor(author: User, title: string, description: string, body: string) {
+  @Property()
+  co_authors = '';
+
+  constructor(author: User, title: string, description: string, body: string, co_authors: string) {
     this.author = author;
     this.title = title;
     this.description = description;
     this.body = body;
+    this.co_authors = co_authors;
     this.slug = slug(title, { lower: true }) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
 
