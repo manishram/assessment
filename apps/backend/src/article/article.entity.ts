@@ -52,12 +52,19 @@ export class Article {
   @Property()
   co_authors = '';
 
+  @Property()
+  edit_status: number = 0;
+
+  @Property()
+  editor_id: number;
+
   constructor(author: User, title: string, description: string, body: string, co_authors: string) {
     this.author = author;
     this.title = title;
     this.description = description;
     this.body = body;
     this.co_authors = co_authors;
+    this.editor_id = author.id;
     this.slug = slug(title, { lower: true }) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
 

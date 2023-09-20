@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/mysql';
@@ -189,6 +189,35 @@ export class ArticleService {
       { populate: ['followers', 'favorites', 'articles'] },
     );
     const article = await this.articleRepository.findOne({ slug }, { populate: ['author'] });
+    if (!article) {
+      // Handle the case where the article is not found (e.g., throw an error)
+      throw new NotFoundException('Article not found');
+    }
+
+    // Check if the editor_id matches the current user's ID
+    if (article.editor_id !== userId) {
+      throw new ForbiddenException('You are not authorized to edit this article.');
+    }
+
+    // Check if edit_status is 1 and if less than 5 minutes have passed since the last update
+    const currentTime: Date = new Date();
+    const currentTimeNew = currentTime.toISOString().slice(0, 19).replace('T', ' ');
+
+    const updatedAt: Date = new Date(article.updatedAt);
+    const updatedAtTimeNew = currentTime.toISOString().slice(0, 19).replace('T', ' ');
+    
+    const timeDifferenceMinutes: number = (currentTime.getTime() - updatedAt.getTime()) / (1000 * 60);
+
+    if (article.edit_status === 1 && timeDifferenceMinutes < 5) {
+      throw new ForbiddenException('The article is currently being edited by another user.');
+    }
+
+    // Update the article data and reset edit_status
+    wrap(article).assign(articleData);
+    article.edit_status = 0; // Reset edit_status after update
+    article.updatedAt = new Date(updatedAtTimeNew);
+
+    
     wrap(article).assign(articleData);
     await this.em.flush();
 

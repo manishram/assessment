@@ -26,7 +26,9 @@ export class DatabaseSeeder extends Seeder {
         favoritesCount: 3,
         createdAt: new Date(),
         updatedAt: new Date(),
-        co_authors: 'test2'
+        co_authors: 'test2',
+        edit_status: 0,
+        editor_id: -1,
       }),
       em.create(Article, {
         author: authors.zolly,
@@ -38,7 +40,9 @@ export class DatabaseSeeder extends Seeder {
         favoritesCount: 7,
         createdAt: new Date(),
         updatedAt: new Date(),
-        co_authors: 'test1, test2'
+        co_authors: 'test1, test2',
+        edit_status: 0,
+        editor_id: -1,
       }),
     ];
     em.persist(articles);

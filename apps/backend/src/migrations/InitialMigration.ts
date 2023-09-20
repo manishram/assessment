@@ -18,7 +18,7 @@ export class InitialMigration extends Migration {
     );
 
     this.addSql(
-      'create table `article` (`id` int unsigned not null auto_increment primary key, `slug` varchar(255) not null, `title` varchar(255) not null, `description` varchar(255) not null, `body` varchar(255) not null, `created_at` datetime not null, `updated_at` datetime not null, `tag_list` text not null, `author_id` int unsigned not null, `favorites_count` int not null, `co_authors` text not null, `edit_status` int not null default 0) default character set utf8mb4 engine = InnoDB;',
+      'create table `article` (`id` int unsigned not null auto_increment primary key, `slug` varchar(255) not null, `title` varchar(255) not null, `description` varchar(255) not null, `body` varchar(255) not null, `created_at` datetime not null default CURRENT_TIMESTAMP, `updated_at` datetime not null, `tag_list` text not null, `author_id` int unsigned not null, `favorites_count` int not null, `co_authors` text not null, `edit_status` int not null default 0, `editor_id` int not null default -1) default character set utf8mb4 engine = InnoDB;',
     );
     this.addSql('alter table `article` add index `article_author_id_index`(`author_id`);');
 
