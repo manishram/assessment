@@ -25,6 +25,10 @@ export class ArticleController {
   async getFeed(@User('id') userId: number, @Query() query: Record<string, string>): Promise<IArticlesRO> {
     return this.articleService.findFeed(+userId, query);
   }
+  @Get('editor/:slug')
+  async editArticle(@User('id') userId: number, @Param('slug') slug: string): Promise<IArticleRO> {
+    return this.articleService.findOne(userId, { slug }, true);
+  }
 
   @Get(':slug')
   async findOne(@User('id') userId: number, @Param('slug') slug: string): Promise<IArticleRO> {

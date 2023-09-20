@@ -89,11 +89,45 @@ export class ArticleService {
     return { articles: res[0].map((a) => a.toJSON(user!)), articlesCount: res[1] };
   }
 
-  async findOne(userId: number, where: Partial<Article>): Promise<IArticleRO> {
+  async findOne(userId: number, where: Partial<Article>, forEdit = false): Promise<IArticleRO> {
     const user = userId
       ? await this.userRepository.findOneOrFail(userId, { populate: ['followers', 'favorites'] })
       : undefined;
     const article = await this.articleRepository.findOne(where, { populate: ['author'] });
+
+    if(forEdit == true){
+
+      if (!article) {
+
+        // Handle the case where the article is not found
+        throw new NotFoundException('Article not found');
+      }
+      const currentUser = userId ? (await this.userRepository.findOneOrFail(userId)).username : undefined;
+      const currentTime: Date = new Date();
+      const updatedAt: Date = new Date(article.updatedAt);
+      
+      const timeDifferenceMinutes: number = (currentTime.getTime() - updatedAt.getTime()) / (1000 * 60);
+  
+      if (article.edit_status === 1 && timeDifferenceMinutes < 5) {
+        throw new ForbiddenException('The article is currently being edited by another user.');
+      }
+      else{
+  
+      const coAuthorArray = article.co_authors.split(',').map((coAuthor) => coAuthor.trim());
+      if(article.author.id == userId || coAuthorArray.includes(currentUser!)){
+        // Change edit_status
+      article.edit_status = 1;
+      article.updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      article.editor_id = userId;
+      await this.em.flush();
+      }
+      }
+      
+      // console.log('editor mode');
+      return { article: article && article.toJSON(user) } as IArticleRO;
+    }
+
+    // console.log('reader mode');
     return { article: article && article.toJSON(user) } as IArticleRO;
   }
 
@@ -177,7 +211,6 @@ export class ArticleService {
     user?.articles.add(article);
     await this.em.flush();
   
-    // article.co_authors = dto.co_authors;
 
     return { article: article.toJSON(user!) };
   }
@@ -190,7 +223,7 @@ export class ArticleService {
     );
     const article = await this.articleRepository.findOne({ slug }, { populate: ['author'] });
     if (!article) {
-      // Handle the case where the article is not found (e.g., throw an error)
+      // Handle the case where the article is not found
       throw new NotFoundException('Article not found');
     }
 
@@ -201,10 +234,7 @@ export class ArticleService {
 
     // Check if edit_status is 1 and if less than 5 minutes have passed since the last update
     const currentTime: Date = new Date();
-    const currentTimeNew = currentTime.toISOString().slice(0, 19).replace('T', ' ');
-
     const updatedAt: Date = new Date(article.updatedAt);
-    const updatedAtTimeNew = currentTime.toISOString().slice(0, 19).replace('T', ' ');
     
     const timeDifferenceMinutes: number = (currentTime.getTime() - updatedAt.getTime()) / (1000 * 60);
 
@@ -215,10 +245,8 @@ export class ArticleService {
     // Update the article data and reset edit_status
     wrap(article).assign(articleData);
     article.edit_status = 0; // Reset edit_status after update
-    article.updatedAt = new Date(updatedAtTimeNew);
-
-    
-    wrap(article).assign(articleData);
+    article.updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    article.editor_id = userId;
     await this.em.flush();
 
     return { article: article!.toJSON(user!) };

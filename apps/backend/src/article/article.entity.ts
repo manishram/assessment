@@ -31,11 +31,11 @@ export class Article {
   @Property()
   body = '';
 
-  @Property({ type: 'date' })
-  createdAt = new Date();
+  @Property({ type: 'string' })
+  createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-  @Property({ type: 'date', onUpdate: () => new Date() })
-  updatedAt = new Date();
+  @Property({ type: 'string', onUpdate: () => new Date().toISOString().slice(0, 19).replace('T', ' ') })
+  updatedAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
   @Property({ type: ArrayType })
   tagList: string[] = [];
