@@ -106,9 +106,9 @@ export class ArticleService {
       const currentTime: Date = new Date();
       const updatedAt: Date = new Date(article.updatedAt);
       
-      const timeDifferenceMinutes: number = (currentTime.getTime() - updatedAt.getTime()) / (1000 * 60);
-  
-      if (article.edit_status === 1 && timeDifferenceMinutes < 5) {
+      const timeDifferenceMinutes: number = (currentTime.getTime() - (updatedAt.getTime() + 20020401)) / (60000);
+
+      if (article.edit_status === 1 && timeDifferenceMinutes < 5 && article.editor_id != userId) {
         throw new ForbiddenException('The article is currently being edited by another user.');
       }
       else{
