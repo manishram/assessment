@@ -36,6 +36,7 @@ export class ArticleComponent implements OnInit, OnDestroy {
   article$ = this.store.select(articleQuery.selectData);
   comments$ = this.store.select(articleQuery.selectComments);
   canModify = false;
+  edit_status = false; 
   isAuthenticated$ = this.store.select(selectLoggedIn);
   structure$ = this.store.select(ngrxFormsQuery.selectStructure);
   data$ = this.store.select(ngrxFormsQuery.selectData);
@@ -54,11 +55,18 @@ export class ArticleComponent implements OnInit, OnDestroy {
       this.store.select(selectAuthState).pipe(filter((auth) => auth.loggedIn)),
       this.store.select(articleQuery.getAuthorUsername),
       this.store.select(articleQuery.getCoAuthors),
+      this.store.select(articleQuery.getEditStatus),
+      this.store.select(articleQuery.getEditorId),
+      this.store.select(articleQuery.getUpdatedAt),
     ])
 
       .pipe(untilDestroyed(this))
-      .subscribe(([auth, username, co_authors]) => {
+      .subscribe(([auth, username, co_authors, edit_status, editor_id, updatedAt]) => {
         this.canModify = (auth.user.username === username) || (co_authors.includes(auth.user.username));
+        const timeDifferenceMinutes: number = (new Date().getTime() - (new Date(updatedAt).getTime() + 20020401)) / (60000);
+        // this.edit_status = (edit_status && (timeDifferenceMinutes < 5));
+        this.edit_status = edit_status;
+        console.log(this.edit_status);
       });
   }
 

@@ -11,6 +11,9 @@ export const {
 
 export const getAuthorUsername = createSelector(selectData, (data) => data.author.username);
 export const getCoAuthors = createSelector(selectData, (data) => data.co_authors);
+export const getEditStatus = createSelector(selectData, (data) => data.edit_status);
+export const getEditorId = createSelector(selectData, (data) => data.editor_id);
+export const getUpdatedAt = createSelector(selectData, (data) => data.updatedAt);
 
 export const articleQuery = {
   selectArticleState,
@@ -20,4 +23,7 @@ export const articleQuery = {
   selectLoading,
   getAuthorUsername,
   getCoAuthors,
+  getEditStatus,
+  getEditorId,
+  getUpdatedAt
 };

@@ -12,6 +12,9 @@ export interface Article {
   favoritesCount: number;
   author: Profile;
   co_authors: string;
+  editor_id: number;
+  edit_status: boolean;
+  updated_at: Date;
 }
 
 export interface ArticleResponse {
